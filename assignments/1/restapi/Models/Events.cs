@@ -40,9 +40,6 @@ namespace restapi.Models
     public class Cancellation : Event
     {
         [BsonIgnore]
-        public int Canceler { get => Person; set { Person = value; } }
-
-        public string Reason { get; set; }
 
         public override string ToString()
         {
