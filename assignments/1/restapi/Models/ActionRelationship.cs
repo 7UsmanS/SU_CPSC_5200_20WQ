@@ -12,6 +12,8 @@ namespace restapi.Models
 
         Delete,
 
+        Update,
+
         RecordLine
     }
 }
