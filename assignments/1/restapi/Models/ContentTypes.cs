@@ -21,7 +21,9 @@ namespace restapi.Models
         public const string Error = "application/com.my-company.my-product.simple-error+json";
 
         public const string Cancellation = "application/com.my-company.my-product.timesheet-cancellation+json";
-        
+
+        public const string Deletion = "application/com.my-company.my-product.timesheet-deletion+json";
+
         public const string Submittal = "application/com.my-company.my-product.timesheet-submittal+json";
         
         public const string Rejection = "application/com.my-company.my-product.timesheet-rejection+json";
