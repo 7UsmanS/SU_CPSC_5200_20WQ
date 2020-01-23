@@ -74,6 +74,7 @@ namespace restapi.Models
                         Reference = $"/timesheets/{UniqueIdentifier}/cancellation"
                     });
 
+
                     links.Add(new ActionLink()
                     {
                         Method = Method.Post,
@@ -89,6 +90,15 @@ namespace restapi.Models
                         Relationship = ActionRelationship.RecordLine,
                         Reference = $"/timesheets/{UniqueIdentifier}/lines"
                     });
+
+                    links.Add(new ActionLink()
+                    {
+                        Method = Method.Post,
+                        Type = ContentTypes.Deletion,
+                        Relationship = ActionRelationship.Cancel,
+                        Reference = $"/timesheets/{UniqueIdentifier}/deletion"
+                    });
+
 
                     break;
 
@@ -120,11 +130,22 @@ namespace restapi.Models
                     break;
 
                 case TimecardStatus.Approved:
-                    // terminal state, nothing possible here
-                    break;
+                    // Fterminal state, nothing possible here
+
+                case TimecardStatus.Rejected:
+                    // Fterminal state, nothing possible here
+
 
                 case TimecardStatus.Cancelled:
                     // terminal state, nothing possible here
+                    links.Add(new ActionLink()
+                    {
+                        Method = Method.Post,
+                        Type = ContentTypes.Deletion,
+                        Relationship = ActionRelationship.Delete,
+                        Reference = $"/timesheets/{UniqueIdentifier}/deletion"
+                    });
+
                     break;
             }
 
@@ -171,6 +192,17 @@ namespace restapi.Models
         public TimecardLine AddLine(DocumentLine documentLine)
         {
             var annotatedLine = new TimecardLine(documentLine);
+
+            Lines.Add(annotatedLine);
+
+            return annotatedLine;
+        }
+
+        public TimecardLine ReplaceLine(DocumentLine documentLine)
+        {
+            var annotatedLine = new TimecardLine(documentLine);
+
+            Lines.Clear();
 
             Lines.Add(annotatedLine);
 
