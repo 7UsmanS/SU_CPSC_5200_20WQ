@@ -57,6 +57,36 @@ namespace restapi.Controllers
                     ApplicationRelationship.Version, "0.1"
                 }
             };
+
+
+            // Patch api/values
+        [Route("~/")]
+        [HttpGet]
+        [Produces(ContentTypes.Root)]
+        [ProducesResponseType(typeof(IDictionary<ApplicationRelationship, object>), 200)]
+        public IDictionary<ApplicationRelationship, object> Put()
+        {
+            return new Dictionary<ApplicationRelationship, object>()
+            {
+                {
+                    ApplicationRelationship.Timesheets, new List<DocumentLink>()
+                    {
+                        new DocumentLink()
+                        {
+                            Method = Method.Put,
+                            Type = ContentTypes.Timesheets,
+                            Relationship = DocumentRelationship.Timesheets,
+                            Reference = "/timesheets"
+                        }
+                    }
+                },
+                {
+                    ApplicationRelationship.Version, "0.1"
+                }
+            };
+
+
+
         }
     }
 
