@@ -68,10 +68,45 @@ namespace restapi.Controllers
             return timecard;
         }
 
+        [HttpPost]
+        [Produces(ContentTypes.Timesheet)]
+        [ProducesResponseType(typeof(Timecard), 200)]
+        public Timecard Update(Guid id, [FromBody], Updation updation)
+        {
+            logger.LogInformation($"Looking for timesheet {id}");
+
+            Timecard timecard = repository.Find(id);
+
+            if (timecard == null)
+            {
+                return NotFound();
+            }
+
+            timecard.Transitions.Add(new Transition(entered));
+
+           
+
+            
+
+            var annotatedLine = timecard.AddLine(documentLine);
+            repository.Add(timecard);
+            repository.Update(timecard);
+
+            return timecard;
+        }
+            else
+            {
+                return NotFound();
+    }
+}
+
         [HttpDelete("{id:guid}")]
+        [Produces(ContentTypes.Transition)]
+        [ProducesResponseType(typeof(Transition), 200)]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public IActionResult Delete(Guid id)
+        [ProducesResponseType(typeof(InvalidStateError), 409)]
+        public IActionResult Delete(Guid id, [FromBody] Deletion deletetion)
         {
             logger.LogInformation($"Looking for timesheet {id}");
 
@@ -86,10 +121,28 @@ namespace restapi.Controllers
             {
                 return StatusCode(409, new InvalidStateError() { });
             }
+            if (timecard.CanBeDeleted() == true)
+            {
 
-            repository.Delete(id);
+                var transition = new Transition(deletion, TimecardStatus.deleted);
 
-            return Ok();
+                logger.LogInformation($"Adding deletion transition {transition}");
+
+                timecard.Transitions.Add(transition);
+
+                repository.Update(timecard);
+
+                repository.Delete(id);
+
+                return Ok(transition);
+
+            }
+            else
+            {
+                return NotFound();
+            }
+
+
         }
 
         [HttpGet("{id:guid}/lines")]
@@ -145,6 +198,37 @@ namespace restapi.Controllers
                 return NotFound();
             }
         }
+
+        [HttpPost("{id:guid}/lines")]
+        [Produces(ContentTypes.TimesheetLine)]
+        [ProducesResponseType(typeof(TimecardLine), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(InvalidStateError), 409)]
+        public IActionResult ReplaceLine(Guid id, [FromBody] DocumentLine documentLine)
+        {
+            logger.LogInformation($"Looking for timesheet {id}");
+
+            Timecard timecard = repository.Find(id);
+
+            if (timecard != null)
+            {
+                if (timecard.Status != TimecardStatus.Draft)
+                {
+                    return StatusCode(409, new InvalidStateError() { });
+                }
+
+                var annotatedLine = timecard.ReplaceLine(documentLine);
+
+                repository.Update(timecard);
+
+                return Ok(annotatedLine);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
 
         [HttpGet("{id:guid}/transitions")]
         [Produces(ContentTypes.Transitions)]
@@ -205,6 +289,9 @@ namespace restapi.Controllers
                 return NotFound();
             }
         }
+
+
+
 
         [HttpGet("{id:guid}/submittal")]
         [Produces(ContentTypes.Transition)]
@@ -274,6 +361,9 @@ namespace restapi.Controllers
             }
         }
 
+
+        
+
         [HttpGet("{id:guid}/cancellation")]
         [Produces(ContentTypes.Transition)]
         [ProducesResponseType(typeof(Transition), 200)]
@@ -291,6 +381,41 @@ namespace restapi.Controllers
                 {
                     var transition = timecard.Transitions
                                         .Where(t => t.TransitionedTo == TimecardStatus.Cancelled)
+                                        .OrderByDescending(t => t.OccurredAt)
+                                        .FirstOrDefault();
+
+                    return Ok(transition);
+                }
+                else
+                {
+                    return StatusCode(409, new MissingTransitionError() { });
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+
+        [HttpGet("{id:guid}/deletion")]
+        [Produces(ContentTypes.Transition)]
+        [ProducesResponseType(typeof(Transition), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(MissingTransitionError), 409)]
+        public IActionResult GetDeletion(Guid id)
+
+        {
+            logger.LogInformation($"Looking for timesheet {id}");
+
+            Timecard timecard = repository.Find(id);
+
+            if (timecard != null)
+            {
+                if (timecard.Status == TimecardStatus.Cancelled)
+                {
+                    var transition = timecard.Transitions
+                                        .Where(t => t.TransitionedTo == TimecardStatus.deleted)
                                         .OrderByDescending(t => t.OccurredAt)
                                         .FirstOrDefault();
 
