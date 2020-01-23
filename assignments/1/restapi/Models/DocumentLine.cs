@@ -6,14 +6,14 @@ namespace restapi.Models
     {
         public DocumentLine() { }
 
-        public int Week { get; set; }
+        public int Week { get; set; put; post; }
 
-        public int Year { get; set; }
+        public int Year { get; set; put; post; }
 
-        public DayOfWeek Day { get; set; }
+        public DayOfWeek Day { get; set; put; post; }
 
-        public float Hours { get; set; }
+        public float Hours { get; set; put; post; }
 
-        public string Project { get; set; }
+        public string Project { get; set; put; post; }
     }
 }
