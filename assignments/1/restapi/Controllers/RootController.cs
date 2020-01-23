@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using restapi.Models;
 
@@ -31,6 +31,35 @@ namespace restapi.Controllers
                     ApplicationRelationship.Version, "0.1"
                 }
             };
+
+            // Post api/values
+        [Route("~/")]
+        [HttpPut]
+        [Produces(ContentTypes.Root)]
+        [ProducesResponseType(typeof(IDictionary<ApplicationRelationship, object>), 200)]
+        public IDictionary<ApplicationRelationship, object> Post()
+        {
+            return new Dictionary<ApplicationRelationship, object>()
+            {
+                {
+                    ApplicationRelationship.Timesheets, new List<DocumentLink>()
+                    {
+                        new DocumentLink()
+                        {
+                            Method = Method.Post,
+                            Type = ContentTypes.Timesheets,
+                            Relationship = DocumentRelationship.Timesheets,
+                            Reference = "/timesheets"
+                        }
+                    }
+                },
+                {
+                    ApplicationRelationship.Version, "0.1"
+                }
+            };
         }
     }
+
+
+    
 }
